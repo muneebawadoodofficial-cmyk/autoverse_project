@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customize - Auto Verse</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@r128/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@r128/examples/jsm/"
+            }
+        }
+    </script>
+    <style>
+        * { font-family: 'Poppins', sans-serif; }
+        body { background: #0a0e27; color: #fff; margin: 0; padding: 0; overflow: hidden; }
+        .navbar { background: linear-gradient(135deg, #1a1f3a 0%, #0f1729 100%); padding: 1rem 0; position: fixed; top: 0; width: 100%; z-index: 100; border-bottom: 1px solid rgba(0, 212, 255, 0.1); }
+        .navbar-brand { font-size: 1.2rem; font-weight: 700; background: linear-gradient(135deg, #00d4ff, #0099ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .customizer-wrapper { display: flex; height: calc(100vh - 70px); margin-top: 70px; }
+        .canvas-container { 
+            flex: 1; 
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1729 100%); 
+            position: relative;
+            transition: background 0.5s ease;
+        }
+        
+        /* Background image support */
+        .canvas-container.has-bg-image {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        
+        /* Background styles */
+        .canvas-container.bg-dark {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1729 100%);
+        }
+        .canvas-container.bg-garage {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+        }
+        .canvas-container.bg-showroom {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 50%, #f5f5f5 100%);
+        }
+        .canvas-container.bg-sunset {
+            background: linear-gradient(135deg, #FF6B6B 0%, #FFD93D 50%, #6BCB77 100%);
+        }
+        
+        /* Car stats overlay */
+        .car-stats {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            min-width: 250px;
+        }
+        
+        .car-stats h4 {
+            color: #00d4ff;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.7rem;
+            font-size: 0.9rem;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .stat-value {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+        
+        /* Speedometer */
+        .speedometer {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            border-radius: 50px;
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .speed-display {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00d4ff;
+            line-height: 1;
+        }
+        
+        .speed-unit {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        model-viewer { width: 100%; height: 100%; }
+        .controls-panel { 
+            width: 380px; 
+            background: linear-gradient(135deg, #1a1f3a 0%, #0f1729 100%); 
+            border-left: 1px solid rgba(0, 212, 255, 0.2); 
+            overflow-y: auto; 
+            padding: 2rem 1.5rem;
+        }
+        
+        .controls-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .controls-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .controls-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        .control-section { margin-bottom: 2rem; }
+        .control-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: #00d4ff; text-transform: uppercase; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-size: 0.85rem; color: rgba(255, 255, 255, 0.8); }
+        .form-group input, .form-group select { width: 100%; padding: 0.6rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 8px; color: #fff; }
+        .form-group input:focus, .form-group select:focus { outline: none; background: rgba(255, 255, 255, 0.1); border-color: #00d4ff; }
+        
+        /* Sliders */
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            cursor: pointer;
+            border: 2px solid white;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            cursor: pointer;
+            border: 2px solid white;
+        }
+        
+        .slider-value {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.3rem;
+        }
+        
+        .color-presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        .color-preset { aspect-ratio: 1; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: all 0.3s; }
+        .color-preset:hover { transform: scale(1.1); border-color: #00d4ff; }
+        .button-group { display: flex; gap: 0.8rem; }
+        .btn-action { flex: 1; padding: 0.8rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-save { background: linear-gradient(135deg, #00d4ff, #0099ff); color: white; }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4); }
+        .btn-back { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); width: 100%; margin-bottom: 1rem; }
+        .design-name-input { width: 100%; padding: 0.8rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); border-radius: 8px; color: #fff; margin-bottom: 0.8rem; }
+        
+        /* Sound buttons styling */
+        .sound-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .btn-sound {
+            flex: 1;
+            padding: 0.7rem;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            color: #00d4ff;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+        }
+        .btn-sound:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .btn-sound:active {
+            transform: scale(0.95);
+        }
+        .btn-sound.active {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            color: white;
+            border-color: #00d4ff;
+        }
+        
+        /* Background selection buttons */
+        .bg-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+        .btn-bg {
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(0, 212, 255, 0.2);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.85rem;
+        }
+        .btn-bg:hover {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: rgba(0, 212, 255, 0.5);
+        }
+        .btn-bg.active {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            color: white;
+            border-color: #00d4ff;
+        }
+        
+        /* File upload button */
+        .btn-upload {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(255, 193, 7, 0.1);
+            border: 2px dashed rgba(255, 193, 7, 0.5);
+            border-radius: 8px;
+            color: #ffc107;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.8rem;
+            text-align: center;
+        }
+        .btn-upload:hover {
+            background: rgba(255, 193, 7, 0.2);
+            border-color: #ffc107;
+        }
+        
+        #bgImageUpload {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><i class="fas fa-car"></i> Auto Verse</a>
+            <span class="text-muted">{{ car_model|replace('-', ' ')|title }}</span>
+            <a class="nav-link ms-auto" href="/car-selection"><i class="fas fa-arrow-left"></i> Back</a>
+        </div>
+    </nav>
+
+    <div class="customizer-wrapper">
+        <div class="canvas-container bg-dark" id="canvasContainer">
+            <!-- Car Stats Panel -->
+            <div class="car-stats" id="carStats">
+                <h4><i class="fas fa-tachometer-alt"></i> {{ car_model|replace('-', ' ')|title }}</h4>
+                <div class="stat-row">
+                    <span class="stat-label">Top Speed:</span>
+                    <span class="stat-value" id="topSpeed">250 km/h</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Horsepower:</span>
+                    <span class="stat-value" id="horsepower">450 HP</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">0-100 km/h:</span>
+                    <span class="stat-value" id="acceleration">3.9s</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Weight:</span>
+                    <span class="stat-value" id="weight">1,650 kg</span>
+                </div>
+            </div>
+            
+            <!-- Speedometer -->
+            <div class="speedometer" id="speedometer">
+                <i class="fas fa-tachometer-alt" style="color: #00d4ff; font-size: 1.5rem;"></i>
+                <div>
+                    <div class="speed-display" id="speedValue">0</div>
+                    <div class="speed-unit">km/h</div>
+                </div>
+            </div>
+            
+            <model-viewer id="viewer" 
+                src="/model/{{ car_model }}" 
+                alt="3D Car Model"
+                auto-rotate 
+                camera-controls
+                style="width:100%; height:100%;">
+            </model-viewer>
+        </div>
+
+        <div class="controls-panel">
+            <a href="/car-selection" class="btn-action btn-back"><i class="fas fa-arrow-left"></i> Back</a>
+            
+            <div class="control-section">
+                <h3><i class="fas fa-tag"></i> Design Name</h3>
+                <input type="text" class="design-name-input" id="designName" value="My Design">
+            </div>
+
+            <div class="control-section">
+                <h3><i class="fas fa-palette"></i> Color</h3>
+                <input type="color" id="bodyColor" value="#FF0000">
+                <label style="font-size: 0.75rem; margin-top: 0.5rem;">Presets:</label>
+                <div class="color-presets">
+                    <div class="color-preset" style="background: #FF0000;"></div>
+                    <div class="color-preset" style="background: #000000;"></div>
+                    <div class="color-preset" style="background: #0099FF;"></div>
+                    <div class="color-preset" style="background: #00D4FF;"></div>
+                    <div class="color-preset" style="background: #FFD700;"></div>
+                    <div class="color-preset" style="background: #DC143C;"></div>
+                    <div class="color-preset" style="background: #39FF14;"></div>
+                    <div class="color-preset" style="background: #FF6600;"></div>
+                    <div class="color-preset" style="background: #FFFFFF;"></div>
+                    <div class="color-preset" style="background: #9400D3;"></div>
+                    <div class="color-preset" style="background: #FF1493;"></div>
+                    <div class="color-preset" style="background: #00FFFF;"></div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3><i class="fas fa-sparkles"></i> Paint Material</h3>
+                <div class="form-group">
+                    <label>Finish Type</label>
+                    <select id="paintFinish" onchange="updateFinish()">
+                        <option value="glossy">Glossy (Shiny)</option>
+                        <option value="matte">Matte (Flat)</option>
+                        <option value="metallic">Metallic (Chrome)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Glossiness: <span id="glossValue">70%</span></label>
+                    <input type="range" id="glossiness" min="0" max="100" value="70" oninput="updateGloss(this.value)">
+                </div>
+                <div class="form-group">
+                    <label>Metallic Level: <span id="metallicValue">30%</span></label>
+                    <input type="range" id="metallic" min="0" max="100" value="30" oninput="updateMetallic(this.value)">
+                </div>
+            </div>
+
+            <!-- BACKGROUND SELECTION -->
+            <div class="control-section">
+                <h3><i class="fas fa-image"></i> Environment</h3>
+                <div class="bg-options">
+                    <button class="btn-bg active" onclick="changeBackground('bg-dark')">
+                        <i class="fas fa-moon"></i> Dark Studio
+                    </button>
+                    <button class="btn-bg" onclick="changeBackground('bg-garage')">
+                        <i class="fas fa-warehouse"></i> Garage
+                    </button>
+                    <button class="btn-bg" onclick="changeBackground('bg-showroom')">
+                        <i class="fas fa-store"></i> Showroom
+                    </button>
+                    <button class="btn-bg" onclick="changeBackground('bg-sunset')">
+                        <i class="fas fa-sun"></i> Sunset
+                    </button>
+                </div>
+                <label for="bgImageUpload" class="btn-upload">
+                    <i class="fas fa-upload"></i> Upload Custom Background
+                </label>
+                <input type="file" id="bgImageUpload" accept="image/*" onchange="uploadBackground(event)">
+            </div>
+
+            <!-- TIME OF DAY -->
+            <div class="control-section">
+                <h3><i class="fas fa-clock"></i> Time of Day</h3>
+                <div class="form-group">
+                    <select id="timeOfDay" onchange="changeTimeOfDay(this.value)">
+                        <option value="morning">🌅 Morning</option>
+                        <option value="noon" selected>☀️ Noon</option>
+                        <option value="evening">🌆 Evening</option>
+                        <option value="night">🌙 Night</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- HEADLIGHTS -->
+            <div class="control-section">
+                <h3><i class="fas fa-lightbulb"></i> Headlights</h3>
+                <div class="sound-buttons">
+                    <button class="btn-sound" id="lightsBtn" onclick="toggleLights()">
+                        <i class="fas fa-lightbulb"></i> <span id="lightsText">Off</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CAR MOVEMENT -->
+            <div class="control-section">
+                <h3><i class="fas fa-car"></i> Car Movement</h3>
+                <div class="sound-buttons">
+                    <button class="btn-sound" id="driveBtn" onclick="toggleDrive()">
+                        <i class="fas fa-play"></i> <span id="driveText">Start Drive</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- SOUND CONTROLS -->
+            <div class="control-section">
+                <h3><i class="fas fa-volume-up"></i> Sounds</h3>
+                <div class="sound-buttons">
+                    <button class="btn-sound" onclick="playHorn()">
+                        <i class="fas fa-bullhorn"></i> Horn
+                    </button>
+                    <button class="btn-sound" id="engineBtn" onclick="toggleEngine()">
+                        <i class="fas fa-cog"></i> Engine
+                    </button>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-action btn-save" onclick="saveDesign()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn-action btn-save" onclick="location.reload()"><i class="fas fa-redo"></i> Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO ELEMENTS (hidden) -->
+    <audio id="hornSound" preload="auto">
+        <source src="/static/sounds/horn.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="engineSound" preload="auto" loop>
+        <source src="/static/sounds/engine.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="spraySound" preload="auto">
+        <source src="/static/sounds/spray.mp3" type="audio/mpeg">
+    </audio>
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@4.0.0/dist/model-viewer.min.js"></script>
+
+    <script>
+        const carModel = '{{ car_model }}';
+        const viewer = document.querySelector('#viewer');
+        const colorInput = document.querySelector('#bodyColor');
+        const presets = document.querySelectorAll('.color-preset');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const engineBtn = document.getElementById('engineBtn');
+        const lightsBtn = document.getElementById('lightsBtn');
+        const driveBtn = document.getElementById('driveBtn');
+        const speedValue = document.getElementById('speedValue');
+
+        // Audio elements
+        const hornSound = document.getElementById('hornSound');
+        const engineSound = document.getElementById('engineSound');
+        const spraySound = document.getElementById('spraySound');
+
+        // States
+        let engineRunning = false;
+        let lightsOn = false;
+        let driving = false;
+        let currentSpeed = 0;
+        let speedInterval = null;
+
+        // Car stats by model
+        const carSpecs = {
+            'bmw-m4': { topSpeed: '280 km/h', hp: '503 HP', accel: '3.9s', weight: '1,650 kg' },
+            'audi-r8': { topSpeed: '330 km/h', hp: '610 HP', accel: '3.2s', weight: '1,695 kg' },
+            'ford-mustang': { topSpeed: '250 km/h', hp: '460 HP', accel: '4.3s', weight: '1,745 kg' },
+            'toyota-supra': { topSpeed: '250 km/h', hp: '335 HP', accel: '4.1s', weight: '1,540 kg' }
+        };
+
+        // Update car stats
+        function updateCarStats() {
+            const specs = carSpecs[carModel] || carSpecs['bmw-m4'];
+            document.getElementById('topSpeed').textContent = specs.topSpeed;
+            document.getElementById('horsepower').textContent = specs.hp;
+            document.getElementById('acceleration').textContent = specs.accel;
+            document.getElementById('weight').textContent = specs.weight;
+        }
+
+        // Paint material controls
+        function updateFinish() {
+            const finish = document.getElementById('paintFinish').value;
+            if (!viewer.model) return;
+            
+            viewer.model.materials.forEach(material => {
+                const name = material.name.toLowerCase();
+                if (!shouldSkipMaterial(name)) {
+                    switch(finish) {
+                        case 'glossy':
+                            material.pbrMetallicRoughness.setRoughnessFactor(0.2);
+                            material.pbrMetallicRoughness.setMetallicFactor(0.3);
+                            break;
+                        case 'matte':
+                            material.pbrMetallicRoughness.setRoughnessFactor(0.9);
+                            material.pbrMetallicRoughness.setMetallicFactor(0.1);
+                            break;
+                        case 'metallic':
+                            material.pbrMetallicRoughness.setRoughnessFactor(0.1);
+                            material.pbrMetallicRoughness.setMetallicFactor(0.9);
+                            break;
+                    }
+                }
+            });
+        }
+
+        function updateGloss(value) {
+            document.getElementById('glossValue').textContent = value + '%';
+            if (!viewer.model) return;
+            
+            const roughness = 1 - (value / 100);
+            viewer.model.materials.forEach(material => {
+                const name = material.name.toLowerCase();
+                if (!shouldSkipMaterial(name)) {
+                    material.pbrMetallicRoughness.setRoughnessFactor(roughness);
+                }
+            });
+        }
+
+        function updateMetallic(value) {
+            document.getElementById('metallicValue').textContent = value + '%';
+            if (!viewer.model) return;
+            
+            const metallic = value / 100;
+            viewer.model.materials.forEach(material => {
+                const name = material.name.toLowerCase();
+                if (!shouldSkipMaterial(name)) {
+                    material.pbrMetallicRoughness.setMetallicFactor(metallic);
+                }
+            });
+        }
+
+        // Time of day
+        function changeTimeOfDay(time) {
+            switch(time) {
+                case 'morning':
+                    viewer.environmentImage = null;
+                    viewer.skyboxImage = null;
+                    viewer.shadowIntensity = 0.5;
+                    break;
+                case 'noon':
+                    viewer.environmentImage = null;
+                    viewer.skyboxImage = null;
+                    viewer.shadowIntensity = 1;
+                    break;
+                case 'evening':
+                    viewer.environmentImage = null;
+                    viewer.skyboxImage = null;
+                    viewer.shadowIntensity = 0.7;
+                    break;
+                case 'night':
+                    viewer.environmentImage = null;
+                    viewer.skyboxImage = null;
+                    viewer.shadowIntensity = 0.3;
+                    break;
+            }
+        }
+
+        // Toggle lights
+        function toggleLights() {
+            lightsOn = !lightsOn;
+            if (lightsOn) {
+                lightsBtn.classList.add('active');
+                document.getElementById('lightsText').textContent = 'On';
+            } else {
+                lightsBtn.classList.remove('active');
+                document.getElementById('lightsText').textContent = 'Off';
+            }
+        }
+
+        // Toggle driving
+        function toggleDrive() {
+            driving = !driving;
+            if (driving) {
+                driveBtn.classList.add('active');
+                document.getElementById('driveText').textContent = 'Stop';
+                startDriving();
+            } else {
+                driveBtn.classList.remove('active');
+                document.getElementById('driveText').textContent = 'Start Drive';
+                stopDriving();
+            }
+        }
+
+        function startDriving() {
+            speedInterval = setInterval(() => {
+                if (currentSpeed < 120) {
+                    currentSpeed += 2;
+                    speedValue.textContent = currentSpeed;
+                }
+            }, 100);
+        }
+
+        function stopDriving() {
+            clearInterval(speedInterval);
+            const slowDown = setInterval(() => {
+                if (currentSpeed > 0) {
+                    currentSpeed -= 5;
+                    speedValue.textContent = Math.max(0, currentSpeed);
+                } else {
+                    clearInterval(slowDown);
+                }
+            }, 100);
+        }
+
+        // Sound functions
+        function playHorn() {
+            hornSound.currentTime = 0;
+            hornSound.play().catch(e => console.log('Horn sound error:', e));
+        }
+
+        function toggleEngine() {
+            if (engineRunning) {
+                engineSound.pause();
+                engineSound.currentTime = 0;
+                engineRunning = false;
+                engineBtn.classList.remove('active');
+                engineBtn.innerHTML = '<i class="fas fa-cog"></i> Engine';
+            } else {
+                engineSound.play().catch(e => console.log('Engine sound error:', e));
+                engineRunning = true;
+                engineBtn.classList.add('active');
+                engineBtn.innerHTML = '<i class="fas fa-cog fa-spin"></i> Stop';
+            }
+        }
+
+        function playSpray() {
+            spraySound.currentTime = 0;
+            spraySound.play().catch(e => console.log('Spray sound error:', e));
+        }
+
+        // Background change function
+        function changeBackground(bgClass) {
+            canvasContainer.className = 'canvas-container ' + bgClass;
+            document.querySelectorAll('.btn-bg').forEach(btn => btn.classList.remove('active'));
+            event.target.closest('.btn-bg').classList.add('active');
+        }
+
+        // Upload custom background
+        function uploadBackground(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    canvasContainer.style.backgroundImage = url('${e.target.result}');
+                    canvasContainer.className = 'canvas-container has-bg-image';
+                    document.querySelectorAll('.btn-bg').forEach(btn => btn.classList.remove('active'));
+                };
+                reader.readAsDataURL(file);
+}
+    }
+
+    // Wait for model to load
+    viewer.addEventListener('load', () => {
+        console.log('✅ Model loaded successfully!');
+        updateCarStats();
+        applyColor('#FF0000');
+    });
+
+    // Convert hex to RGBA array
+    function hexToRgba(hex) {
+        const r = parseInt(hex.slice(1, 3), 16) / 255;
+        const g = parseInt(hex.slice(3, 5), 16) / 255;
+        const b = parseInt(hex.slice(5, 7), 16) / 255;
+        return [r, g, b, 1];
+    }
+
+    // Check if material should be skipped
+    function shouldSkipMaterial(name) {
+        return name.includes('glass') || name.includes('light') || 
+               name.includes('interior') || name.includes('mirror') ||
+               name.includes('window') || name.includes('transparent') ||
+               name.includes('signal') || name.includes('logo') ||
+               name.includes('badge') || name.includes('wheel') ||
+               name.includes('tire') || name.includes('brake') ||
+               name.includes('caliper') || name.includes('engine') ||
+               name.includes('grille') || name.includes('grill') ||
+               name.includes('screen') || name.includes('symbol') ||
+               name.includes('decal') || name.includes('speaker') ||
+               name.includes('belt') || name.includes('gauges') ||
+               name.includes('hazard');
+    }
+
+    // Apply color
+    function applyColor(color) {
+        if (!viewer.model) return;
+        
+        const materials = viewer.model.materials;
+        const rgba = hexToRgba(color);
+        
+        playSpray();
+        
+        materials.forEach((material, index) => {
+            const name = material.name.toLowerCase();
+            if (!shouldSkipMaterial(name)) {
+                material.pbrMetallicRoughness.setBaseColorFactor(rgba);
+            }
+        });
+        
+        colorInput.value = color;
+    }
+
+    // Color input change
+    colorInput.addEventListener('input', (e) => {
+        applyColor(e.target.value);
+    });
+
+    // Color preset clicks
+    presets.forEach(preset => {
+        preset.addEventListener('click', () => {
+            const color = preset.style.backgroundColor;
+            const rgb = color.match(/\d+/g);
+            const hex = '#' + rgb.map(x => {
+                const h = parseInt(x).toString(16);
+                return h.length === 1 ? '0' + h : h;
+            }).join('');
+            applyColor(hex);
+        });
+    });
+
+    async function saveDesign() {
+        await fetch('/api/save-design', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                car_model: carModel,
+                name: document.getElementById('designName').value,
+                body_color: document.getElementById('bodyColor').value,
+                paint_finish: document.getElementById('paintFinish').value
+            })
+        });
+        alert('✅ Design saved!');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('✅ Model path: /model/' + carModel);
+    });
+</script>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Gallery - Auto Verse</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 50%, #0f1729 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0f1729 100%);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.7) !important;
+            transition: all 0.3s ease;
+            margin: 0 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: #00d4ff !important;
+            transform: translateY(-2px);
+        }
+
+        .page-header {
+            padding: 4rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 2rem;
+        }
+
+        .filter-section {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .filter-btn {
+            padding: 0.7rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 50px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            border-color: #00d4ff;
+            color: white;
+        }
+
+        .gallery-container {
+            padding: 3rem 2rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .gallery-card {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(0, 153, 255, 0.05) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.6s ease-out;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-10px);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 153, 255, 0.1) 100%);
+            border-color: rgba(0, 212, 255, 0.4);
+            box-shadow: 0 20px 50px rgba(0, 212, 255, 0.2);
+        }
+
+        .gallery-preview {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, rgba(0, 153, 255, 0.1), rgba(0, 212, 255, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: rgba(0, 212, 255, 0.3);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+            position: relative;
+        }
+
+        .gallery-preview::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(0, 212, 255, 0.1) 50%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            z-index: 10;
+        }
+
+        .color-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .gallery-info {
+            padding: 1.5rem;
+        }
+
+        .design-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #fff;
+            word-break: break-word;
+        }
+
+        .design-designer {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .design-model {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .design-stats {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .stat-value {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .design-details {
+            background: rgba(0, 212, 255, 0.05);
+            padding: 0.8rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+
+        .detail-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-label {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .detail-value {
+            color: #00d4ff;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            color: rgba(0, 212, 255, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .page-link {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.6rem 0.9rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .page-link:hover,
+        .page-link.active {
+            background: linear-gradient(135deg, #00d4ff, #0099ff);
+            border-color: #00d4ff;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .filter-section {
+                gap: 0.5rem;
+            }
+
+            .filter-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .gallery-container {
+                padding: 2rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-car"></i> Auto Verse
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-home"></i> Home
+                        </a>
+                    </li>
+                    {% if is_logged_in %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/car-selection">
+                                <i class="fas fa-car-side"></i> Customize
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/garage">
+                                <i class="fas fa-warehouse"></i> Garage
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout">
+                                <i class="fas fa-sign-out-alt"></i> Logout ({{ username }})
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="/login">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/register">
+                                <i class="fas fa-user-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-images"></i> Community Gallery</h1>
+        <p>Explore amazing car designs from our community</p>
+        
+        <!-- Filters -->
+        <div class="filter-section">
+            <a href="/gallery" class="filter-btn {% if not filter_car %}active{% endif %}">
+                <i class="fas fa-th"></i> All Cars
+            </a>
+            <a href="/gallery?car=bmw-m4" class="filter-btn {% if filter_car == 'bmw-m4' %}active{% endif %}">
+                <i class="fas fa-car"></i> BMW M4
+            </a>
+            <a href="/gallery?car=audi-r8" class="filter-btn {% if filter_car == 'audi-r8' %}active{% endif %}">
+                <i class="fas fa-car"></i> Audi R8
+            </a>
+            <a href="/gallery?car=ford-mustang" class="filter-btn {% if filter_car == 'ford-mustang' %}active{% endif %}">
+                <i class="fas fa-car"></i> Ford Mustang
+            </a>
+            <a href="/gallery?car=toyota-supra" class="filter-btn {% if filter_car == 'toyota-supra' %}active{% endif %}">
+                <i class="fas fa-car"></i> Toyota Supra
+            </a>
+        </div>
+    </div>
+
+    <!-- Gallery Container -->
+    {% if gallery_designs.items %}
+        <div class="gallery-container">
+            <div class="gallery-grid">
+                {% for design in gallery_designs.items %}
+                    <div class="gallery-card">
+                        <!-- Preview -->
+                        <div class="gallery-preview">
+                            {% if design.featured %}
+                                <div class="featured-badge">
+                                    <i class="fas fa-star"></i> Featured
+                                </div>
+                            {% endif %}
+                            <div class="color-preview" style="background-color: {{ design.body_color }};"></div>
+                            <img src="{{ url_for('static', filename='images/' + design.car_model + '.jpg') }}" 
+                                 alt="{{ design.name }}" style="width:100%; height:100%; object-fit:cover;">
+                        </div>
+                        
+                        <!-- Info -->
+                        <div class="gallery-info">
+                            <h3 class="design-title">{{ design.name }}</h3>
+                            <p class="design-designer">
+                                <i class="fas fa-user"></i> By {{ design.designer }}
+                            </p>
+                            <p class="design-model">
+                                <i class="fas fa-tag"></i> {{ design.car_model|replace('-', ' ')|title }}
+                            </p>
+                            
+                            <!-- Stats -->
+                            <div class="design-stats">
+                                <div class="stat">
+                                    <i class="fas fa-eye"></i>
+                                    <span class="stat-value">{{ design.views }}</span>
+                                </div>
+                                <div class="stat">
+                                    <i class="fas fa-heart"></i>
+                                    <span class="stat-value">{{ design.views }}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Details -->
+                            <div class="design-details">
+                                <div class="detail-row">
+                                    <span class="detail-label">Color:</span>
+                                    <span class="detail-value">{{ design.body_color }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Finish:</span>
+                                    <span class="detail-value">{{ design.paint_finish|capitalize }}</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">Wheels:</span>
+                                    <span class="detail-value">{{ design.wheel_style|capitalize }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if gallery_designs.pages > 1 %}
+                <div class="pagination">
+                    {% if gallery_designs.has_prev %}
+                        <a href="/gallery?page=1{% if filter_car %}&car={{ filter_car }}{% endif %}" class="page-link">
+                            <i class="fas fa-chevron-left"></i> First
+                        </a>
+                        <a href="/gallery?page={{ gallery_designs.prev_num }}{% if filter_car %}&car={{ filter_car }}{% endif %}" class="page-link">
+                            Previous
+                        </a>
+                    {% endif %}
+                    
+                    {% for page_num in gallery_designs.iter_pages() %}
+                        {% if page_num %}
+                            <a href="/gallery?page={{ page_num }}{% if filter_car %}&car={{ filter_car }}{% endif %}" 
+                               class="page-link {% if page_num == gallery_designs.page %}active{% endif %}">
+                                {{ page_num }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if gallery_designs.has_next %}
+                        <a href="/gallery?page={{ gallery_designs.next_num }}{% if filter_car %}&car={{ filter_car }}{% endif %}" class="page-link">
+                            Next
+                        </a>
+                        <a href="/gallery?page={{ gallery_designs.pages }}{% if filter_car %}&car={{ filter_car }}{% endif %}" class="page-link">
+                            Last <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="empty-state-icon fas fa-car"></i>
+            <h2>No designs found</h2>
+            <p>Be the first to create a design and add it to the gallery!</p>
+        </div>
+    {% endif %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
