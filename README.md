@@ -21,9 +21,9 @@
 
 
 
-   ![Project Screenshot](images/pr1.png)
-   ![Project Screenshot](images/pr2.png)
-   ![Project Screenshot](images/pr3.png)
+   ![Project Screenshot](images/pr1.PNG)
+   ![Project Screenshot](images/pr2.PNG)
+   ![Project Screenshot](images/pr3.PNG)
 
 ---
 *Built by Muneeba Wadood as part of the Software Construction and Development (SCD) course.*
