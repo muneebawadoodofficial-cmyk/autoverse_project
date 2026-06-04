@@ -19,5 +19,11 @@
 2. Navigate to the project folder and install dependencies.
 3. Run the application using Python.
 
+
+
+   ![Project Screenshot](images/pr1.png)
+   ![Project Screenshot](images/pr2.png)
+   ![Project Screenshot](images/pr3.png)
+
 ---
 *Built by Muneeba Wadood as part of the Software Construction and Development (SCD) course.*
